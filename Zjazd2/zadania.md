@@ -1,4 +1,4 @@
-# Zadania# Szkolenie Terraform: Zjazd 2
+# Szkolenie Terraform: Zjazd 2
 
 ## Zadanie 1
 
@@ -29,20 +29,3 @@ Pomocne linki:
 * [Zmienne w terraform](https://developer.hashicorp.com/terraform/language/values/variables)
 * [Pierwszeństwo definicji zmiennych](https://developer.hashicorp.com/terraform/language/values/variables#variable-definition-precedence)
 
-## Zadanie 2
-
-Celem tego zadania jest nauczenie się importowania zasobów do stanu.
-
-W ramach tego zadania należy utworzyć ręcznie poprzez portal Azure nowy Storage Account, przygotować zasób w Terraform i zaimportować go.
-
-Aby zrealizować to zadanie, należy wykonać następujące kroki:
-
-1. Utwórz zasób Storage Account w portalu Azure.
-2. Utwórz reprezentacje Storage Account w pliku Terraform.
-3. Zaimportuj utworzony Storage Account przy pomocy polecenia `terraform import`.
-4. Sprawdź zmiany w pliku stanu po zaimportowaniu zasobu.
-5. Wykonaj polecenie `terraform plan` w celu sprawdzenia zgodności opisanego zasobu ze znajdującym się w chmurzę.
-
-Pomocne linki:
-* [Zasób azurerm_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account)
-* [Komenda: terraform import](https://developer.hashicorp.com/terraform/cli/commands/import)
