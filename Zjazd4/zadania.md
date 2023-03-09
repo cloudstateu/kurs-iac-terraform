@@ -229,3 +229,11 @@ Pomocne linki:
 
 Zaloguj się poprzez SSH na maszynie wirtualnej Jumphost posiadającej publiczny adres IP i spróbuj odpytać przy
 pomocy `curl` aplikację wdrożoną na Azure Container Apps. Adres aplikacji możesz pobrać z zasobu utworzonego w Azure.
+
+Na co warto zwrócić uwagę:
+
+* Jeśli nie możesz połączyć się z aplikacją sprawdź przy pomocy polecenia `nslookup`, czy rozwiązywany jest statyczny
+  adres IP przypisany do Container App Environment. Adres też widoczny będzie w portalu Azure, powinien też być wpisany
+  jako wartość rekordu A wildcard.
+* Przy pomocy polecenia `traceroute` możesz sprawdzić, czy reguły Route Table poprawnie działają. (Wymaga dodatkowej
+  instalacji).
