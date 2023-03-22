@@ -1,0 +1,18 @@
+trigger:
+  branches:
+    include:
+      - master
+  paths:
+    include:
+      - shared/*
+
+variables:
+  - group: terraform-backend
+
+stages:
+  - template: './pipeline-templates/deploy-module.yml'
+    parameters:
+      name: 'Shared'
+      backend_key: 'shared.tfstate'
+      directory: 'shared'
+      variables_file: 'shared.tfvars'

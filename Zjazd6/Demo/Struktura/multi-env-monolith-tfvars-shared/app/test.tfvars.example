@@ -1,0 +1,8 @@
+environment                     = "test"
+project_name                    = "app"
+location                        = "West Europe"
+subscription_id                 = ""
+vnet_address_space              = "10.3.0.0/16"
+tenant_id                       = ""
+developers_group_object_id      = ""
+azure_aks_admin_group_object_id = ""
