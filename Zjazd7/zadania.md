@@ -1,4 +1,4 @@
-# Zadania Domowe Szkolenie Terraform: Zjazd 6
+# Zadania Domowe Szkolenie Terraform: Zjazd 7
 
 Zadania z tego zestawu wykonaj w nowej konfiguracji Terraform, nie będą one wykorzystywane w projekcie z poprzednich
 dwóch zjazdów.
