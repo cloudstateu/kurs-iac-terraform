@@ -1,4 +1,4 @@
-# Zadania Domowe Szkolenie Terraform: Zjazd 7
+# Zadania Domowe Szkolenie Terraform: Zjazd 8
 
 W ramach tego zestawu zadań będziemy kontynuować pracę nad projektem.
 
