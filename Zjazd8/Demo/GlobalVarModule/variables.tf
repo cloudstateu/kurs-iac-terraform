@@ -1,6 +1,10 @@
+module "globals" {
+  source = "./modules/global-vars"
+}
+
 locals {
   prefix   = "${var.env}-${var.my_account}-"
-  acr_name = "${local.prefix}acr"
+  acr_name = "${local.prefix}${module.globals.resources.container-registry}"
 }
 
 variable "env" {
