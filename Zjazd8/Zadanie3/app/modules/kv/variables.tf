@@ -36,3 +36,7 @@ variable "vnet" {
   })
   default = null
 }
+
+variable "enable_private_dns_zone" {
+  default = false
+}
