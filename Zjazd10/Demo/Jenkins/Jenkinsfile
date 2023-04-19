@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    tools {
+        terraform "Terraform"
+    }
+
+    parameters {
+        string(name: 'network_subscription_id', defaultValue: '1bcf81c2-1a09-47ab-8534-8fa56dfe9832')
+    }
+
+    environment {
+        TF_IN_AUTOMATION = true
+        ARM_CLIENT_ID = credentials('ARM_CLIENT_ID')
+        ARM_CLIENT_CERTIFICATE_PATH = credentials('ARM_CLIENT_CERTIFICATE_PATH')
+        ARM_CLIENT_CERTIFICATE_PASSWORD = credentials('ARM_CLIENT_CERTIFICATE_PASSWORD')
+        ARM_SUBSCRIPTION_ID = credentials('ARM_SUBSCRIPTION_ID')
+        ARM_TENANT_ID = credentials('ARM_TENANT_ID')
+        BACKEND_NETWORK_CONFIG = credentials('BACKEND_NETWORK_CONFIG')
+        TF_VAR_network_subscription_id = "${params.network_subscription_id}"
+    }
+
+    stages {
+        stage('Terraform Init & Validate') {
+            steps {
+                dir("Zjazd10/Demo/Jenkins/Terraform") {
+                    sh script: 'terraform init -input=false -backend-config="$BACKEND_NETWORK_CONFIG"', label: "Terraform Init"
+                }
+            }
+        }
+        stage('Terraform: Plan') {
+            steps {
+                dir("Zjazd10/Demo/Jenkins/Terraform") {
+                    sh script: 'terraform plan -out=tfplan -input=false', label: "Terraform Plan"
+                }
+            }
+        }
+        stage('Terraform: Approve Apply') {
+            steps {
+                script {
+                    def userInput = input(id: 'confirm', message: 'Apply Terraform?', parameters: [[$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Apply terraform', name: 'confirm']])
+                }
+            }
+        }
+        stage('Terraform: Apply') {
+            steps {
+                dir("Zjazd10/Demo/Jenkins/Terraform") {
+                    sh script: 'terraform apply -input=false tfplan', label: "Terraform Apply"
+                }
+            }
+        }
+    }
+}
