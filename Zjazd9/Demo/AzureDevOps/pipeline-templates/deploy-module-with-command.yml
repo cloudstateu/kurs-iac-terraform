@@ -1,0 +1,102 @@
+parameters:
+  name: ''
+  backend_key: ''
+  directory: ''
+  variables_file: ''
+  stateCommand: false
+  stateSubcommand: ''
+  importResource: false
+  resourceAddress: ''
+  resourceId: ''
+
+stages:
+  - stage: 'terraformPreparePlan${{parameters.name}}'
+    displayName: 'Prepare plan for ${{parameters.name}}'
+    jobs:
+      - job: 'terraformPlan'
+        displayName: 'Terraform plan (${{parameters.directory}})'
+        pool:
+          name: Azure Pipelines
+        steps:
+          - template: './tf-init.yml'
+            parameters:
+              backend_key: '${{parameters.backend_key}}'
+              directory: '${{parameters.directory}}'
+
+          - task: DownloadSecureFile@1
+            name: terraformVars
+            displayName: 'Download Security Credentials'
+            inputs:
+              secureFile: '${{parameters.variables_file}}'
+
+          - task: TerraformCLI@0
+            displayName: 'Terraform plan'
+            inputs:
+              command: 'plan'
+              commandOptions: "-out=$(Build.ArtifactStagingDirectory)/out.plan -detailed-exitcode -var-file=$(terraformVars.secureFilePath)"
+              workingDirectory: '$(System.DefaultWorkingDirectory)/${{parameters.directory}}'
+              environmentServiceName: '$(service_arm)'
+              publishPlanResults: 'plan_${{parameters.name}}'
+              runAzLogin: true
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publish artifact
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)'
+              publishLocation: 'pipeline'
+              artifactName: 'tf-artifacts-${{parameters.name}}'
+
+  - stage: 'terraformExecutePlan${{parameters.name}}'
+    displayName: 'Execute plan for ${{parameters.name}}'
+    dependsOn: 'terraformPreparePlan${{parameters.name}}'
+    condition: not(or(failed(), canceled()))
+    jobs:
+        # Podczas job typu deployment opublikowany artefakt jest automatycznie pobierany i używany podczas apply.
+      - deployment: terraformExecute
+        displayName: 'Terraform apply (${{parameters.directory}})'
+        environment: '${{parameters.name}}'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: DownloadSecureFile@1
+                  name: terraformVars
+                  displayName: 'Download .tfvars file'
+                  inputs:
+                    secureFile: '${{parameters.variables_file}}'
+
+                - template: './tf-init.yml'
+                  parameters:
+                    backend_key: '${{parameters.backend_key}}'
+                    directory: '${{parameters.directory}}'
+
+                - task: TerraformCLI@0
+                  condition: eq('${{ parameters.stateCommand }}', true)
+                  displayName: 'Terraform state'
+                  inputs:
+                    command: state
+                    workingDirectory: '$(System.DefaultWorkingDirectory)/${{parameters.directory}}'
+                    stateSubCommand: '${{ parameters.stateSubcommand }}'
+                    stateSubCommandAddresses: '${{ parameters.resourceAddress }}'
+
+                - task: TerraformCLI@0
+                  condition: eq('${{ parameters.importResource }}', true)
+                  displayName: 'Terraform import'
+                  inputs:
+                    command: import
+                    workingDirectory: '$(System.DefaultWorkingDirectory)/${{parameters.directory}}'
+                    resourceAddress: '${{ parameters.resourceAddress }}'
+                    resourceId: '${{ parameters.resourceId }}'
+
+                - task: TerraformCLI@0
+                  name: 'terraformExecute'
+                  condition: and(succeeded(), ne('${{ parameters.stateCommand }}', true), ne('${{ parameters.importResource }}', true))
+                  displayName: 'Terraform apply'
+                  inputs:
+                    command: 'apply'
+                    workingDirectory: '$(System.DefaultWorkingDirectory)/${{parameters.directory}}'
+                    commandOptions: '-auto-approve $(Pipeline.Workspace)/tf-artifacts-${{parameters.name}}/out.plan' # Tutaj warto zwrócić uwagę na ścieżkę, gdzie znajduje się plik out.plan
+                    environmentServiceName: '$(service_arm)'
+                    runAzLogin: true

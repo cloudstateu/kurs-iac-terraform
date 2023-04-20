@@ -1,0 +1,19 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - app/*
+
+variables:
+  - group: terraform-backend
+
+stages:
+  - template: './pipeline-templates/deploy-module-tfsec.yml'
+    parameters:
+      name: 'Dev'
+      backend_key: 'dev.terraform.tfstate'
+      directory: 'app'
+      variables_file: 'dev.tfvars'
+

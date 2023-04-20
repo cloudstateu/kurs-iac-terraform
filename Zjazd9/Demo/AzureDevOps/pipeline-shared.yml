@@ -1,0 +1,45 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - shared/*
+
+parameters:
+  - name: stateCommand
+    type: boolean
+    default: false
+    displayName: 'Run state command instead of apply'
+  - name: importResource
+    type: boolean
+    default: false
+    displayName: 'Run import resource instead of apply'
+  - name: stateSubcommand
+    type: string
+    default: 'list'
+    displayName: 'State subcommand'
+  - name: resourceAddress
+    type: string
+    default: ' '
+    displayName: 'Resource address'
+  - name: resourceId
+    type: string
+    default: ' '
+    displayName: 'Resource ID to import'
+
+variables:
+  - group: terraform-backend
+
+stages:
+  - template: './pipeline-templates/deploy-module-with-command.yml'
+    parameters:
+      name: 'Shared'
+      backend_key: 'shared.terraform.tfstate'
+      directory: 'shared'
+      variables_file: 'shared.tfvars'
+      stateCommand: ${{ parameters.stateCommand }}
+      importResource: ${{ parameters.importResource }}
+      stateSubcommand: ${{ parameters.stateSubcommand }}
+      resourceAddress: ${{ parameters.resourceAddress }}
+      resourceId: ${{ parameters.resourceId }}

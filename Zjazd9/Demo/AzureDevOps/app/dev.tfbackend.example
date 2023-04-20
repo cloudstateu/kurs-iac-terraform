@@ -1,0 +1,5 @@
+resource_group_name  = "chm-student0"
+storage_account_name = "devopsbackendchm0"
+container_name       = "tfstate"
+key                  = "dev.terraform.tfstate"
+subscription_id      = "1cf870b4-ddbf-4029-974a-c2d5810f703c"

@@ -1,0 +1,24 @@
+parameters:
+  backend_key: ''
+  directory: ''
+
+steps:
+  - task: TerraformInstaller@0
+    displayName: 'Install terraform 1.4.4'
+    inputs:
+      terraformVersion: '1.4.4'
+
+  - task: TerraformCLI@0
+    displayName: 'Terraform init'
+    inputs:
+      command: init
+      backendType: 'azurerm'
+      workingDirectory: '$(System.DefaultWorkingDirectory)/${{parameters.directory}}'
+      backendServiceArm: '$(service_arm)'
+      backendAzureRmResourceGroupName: '$(resource_group_name)'
+      backendAzureRmResourceGroupLocation: 'westeurope'
+      backendAzureRmStorageAccountName: '$(storage_account_name)'
+      backendAzureRmContainerName: '$(container_name)'
+      backendAzureRmSubscriptionId: '$(subscription_id)'
+      backendAzureRmKey: '${{parameters.backend_key}}'
+

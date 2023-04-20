@@ -1,0 +1,90 @@
+parameters:
+  name: ''
+  backend_key: ''
+  directory: ''
+  variables_file: ''
+
+stages:
+  - stage: 'terraformTfSec${{parameters.name}}'
+    displayName: 'Run tfsec scan for ${{parameters.name}}'
+    jobs:
+      - job: 'tfsec'
+        displayName: 'Terraform tfsec (${{parameters.directory}})'
+        pool:
+          name: Azure Pipelines
+        steps:
+          - task: DownloadSecureFile@1
+            name: terraformVars
+            displayName: 'Download Security Credentials'
+            inputs:
+              secureFile: '${{parameters.variables_file}}'
+
+          - task: tfsec@1
+            displayName: 'Tfsec scan'
+            inputs:
+              dir: '${{parameters.directory}}'
+              args: --soft-fail --tfvars-file $(terraformVars.secureFilePath)
+
+  - stage: 'terraformPreparePlan${{parameters.name}}'
+    displayName: 'Prepare plan for ${{parameters.name}}'
+    jobs:
+      - job: 'terraformPlan'
+        displayName: 'Terraform plan (${{parameters.directory}})'
+        pool:
+          name: Azure Pipelines
+        steps:
+          - template: './tf-init.yml'
+            parameters:
+              backend_key: '${{parameters.backend_key}}'
+              directory: '${{parameters.directory}}'
+
+          - task: DownloadSecureFile@1
+            name: terraformVars
+            displayName: 'Download Security Credentials'
+            inputs:
+              secureFile: '${{parameters.variables_file}}'
+
+          - task: TerraformCLI@0
+            displayName: 'Terraform plan'
+            inputs:
+              command: 'plan'
+              commandOptions: "-out=$(Build.ArtifactStagingDirectory)/out.plan -detailed-exitcode -var-file=$(terraformVars.secureFilePath)"
+              workingDirectory: '$(System.DefaultWorkingDirectory)/${{parameters.directory}}'
+              environmentServiceName: '$(service_arm)'
+              runAzLogin: true
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publish artifact
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)'
+              publishLocation: 'pipeline'
+              artifactName: 'tf-artifacts-${{parameters.name}}'
+
+  - stage: 'terraformExecutePlan${{parameters.name}}'
+    displayName: 'Execute plan for ${{parameters.name}}'
+    dependsOn: 'terraformPreparePlan${{parameters.name}}'
+    condition: not(or(failed(), canceled()))
+    jobs:
+      - deployment: terraformExecute
+        displayName: 'Terraform apply (${{parameters.directory}})'
+        environment: '${{parameters.name}}'
+        strategy:
+            runOnce:
+              deploy:
+                steps:
+                - checkout: self
+
+                - template: './tf-init.yml'
+                  parameters:
+                    backend_key: '${{parameters.backend_key}}'
+                    directory: '${{parameters.directory}}'
+
+                - task: TerraformCLI@0
+                  name: 'terraformExecute'
+                  displayName: 'Terraform apply'
+                  inputs:
+                    command: 'apply'
+                    workingDirectory: '$(System.DefaultWorkingDirectory)/${{parameters.directory}}'
+                    commandOptions: '-auto-approve $(Pipeline.Workspace)/tf-artifacts-${{parameters.name}}/out.plan' # Tutaj warto zwrócić uwagę na ścieżkę, gdzie znajduje się plik out.plan
+                    environmentServiceName: '$(service_arm)'
+                    runAzLogin: true

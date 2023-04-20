@@ -1,0 +1,7 @@
+shared_rg_name         = "chm-student0"
+rg_name                = "chm-student0-a"
+project_name           = "lab"
+environment            = "dev"
+vnet_address_space     = "10.1.0.0/16"
+subscription_id        = "0685fd9c-4d40-4347-98b8-2c014be7272e"
+shared_subscription_id = "1cf870b4-ddbf-4029-974a-c2d5810f703c"
