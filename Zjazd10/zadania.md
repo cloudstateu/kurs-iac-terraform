@@ -31,16 +31,17 @@ W tym zadaniu zabezpieczymy dostęp do usług powstałych podczas projektu.
 
 Należy wykonać następujące kroki:
 
-* Utworzenie `azurerm_private_dns_zone_virtual_network_link` do sieci shared, dzięki temu z poziomu Jumphosta będzie
-  można połączyć się z klastrem AKS
+* Utworzenie `azurerm_private_dns_zone_virtual_network_link` dla strefy DNS wykorzystywanej przez AKS do sieci shared,
+  dzięki temu z poziomu Jumphosta będzie można połączyć się z klastrem AKS
 * Wyłączenie publicznego dostępu do usługi Azure Container Registry
-* Zabroń publicznego dostępu do usługi Azure Key Vault, pozostawiając dostęp ze swojego adresu IP i subnetu App
+* Zabroń publicznego dostępu do usługi Azure Key Vault, pozostawiając dostęp ze swojego adresu IP i sieci aplikacyjnej
 * Wyłącz publiczny dostęp do usługi Azure Cache for Redis
 
 ## Zadanie 3 - AKS Secret Provider
 
 W ramach tego zadania aktywuj na AKS integrację z Key Vault, przy pomocy bloku `key_vault_secrets_provider`.
-Do modułu aks dodaj outputy, który wyświetlą dane tożsamości wykorzystywanej przez key vault secret provider (object_id, client_id).
+Do modułu aks dodaj outputy, który wyświetlą dane tożsamości wykorzystywanej przez key vault secret provider (object_id,
+client_id).
 Nadaj uprawnienia tożsamości Secret Providera do pobierania sekretów z Key Vault.
 
 Pomocne linki:
@@ -69,7 +70,7 @@ W ramach tego zadania zaloguj się poprzez SSH na jump hosta i wykonaj polecenie
 ```bash
 ACR_SUBSCRIPTION_ID=""
 ACR_NAME=""
-#az login # zaloguj się do Azure 
+az login # zaloguj się do Azure 
 az account set -s $ACR_SUBSCRIPTION_ID # wybierz subskrypcję na której jest ACR
 az acr import --name $ACR_NAME --source docker.io/dawidholka/chm-status:1.0.0
 az acr import --name $ACR_NAME -t helm/dawidholka/chm-status:0.1.0 --source registry-1.docker.io/dawidholka/chm-status:0.1.0
@@ -99,7 +100,7 @@ ACR_NAME=""
 KEY_VAULT_NAME=""
 USER_NAME="00000000-0000-0000-0000-000000000000"
 ACR_SUBSCRIPTION_ID=""
-SECRET_PROVIDER_CLIENT_ID=""
+SECRET_PROVIDER_CLIENT_ID="" # do pobrania z outputów modułu aks w zadaniu 3
 
 az account set -s $ACR_SUBSCRIPTION_ID
 
@@ -126,6 +127,7 @@ kubectl get services -n=default # wylistowanie wdrożonych usług wyszukaj tej o
 ```
 
 Do zdebugowania aplikacji możesz wykorzystać komendy:
+
 ```bash
 kubectl get deployments -n=default # wylistowanie wdrożonych deploymentów
 
