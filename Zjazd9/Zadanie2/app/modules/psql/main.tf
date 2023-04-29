@@ -13,7 +13,7 @@ resource "azurerm_postgresql_flexible_server" "psql" {
   resource_group_name    = var.rg.name
   version                = "12"
   delegated_subnet_id    = var.subnet_id
-  private_dns_zone_id    = azurerm_privateFdns_zone.zone.id
+  private_dns_zone_id    = azurerm_private_dns_zone.zone.id
   administrator_login    = "psqladmin"
   administrator_password = var.administrator_password == null ? random_password.password[0].result : var.administrator_password
   zone                   = "3"
